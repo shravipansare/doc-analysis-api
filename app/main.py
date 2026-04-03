@@ -22,15 +22,15 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup/shutdown lifecycle handler."""
-    logger.info("🚀 Document Analysis API starting up...")
+    logger.info("Document Analysis API starting up...")
     # Pre-warm Groq client
     groq_key = os.getenv("GROQ_API_KEY", "")
     if not groq_key:
-        logger.warning("⚠️  GROQ_API_KEY not set — AI analysis will fail!")
+        logger.warning("GROQ_API_KEY not set - AI analysis will fail!")
     else:
-        logger.info("✅ Groq API key loaded.")
+        logger.info("Groq API key loaded.")
     yield
-    logger.info("🛑 Document Analysis API shutting down.")
+    logger.info("Document Analysis API shutting down.")
 
 
 # --------------------------------------------------------------------------- #
@@ -109,44 +109,44 @@ async def root():
 </head>
 <body>
   <div class="container">
-    <h1>🧠 AI Document Analysis API</h1>
-    <p class="subtitle">Intelligent extraction &amp; analysis for PDF, DOCX, and image files <span class="badge">v1.0.0 LIVE</span></p>
+    <h1>Document Analysis API</h1>
+    <p class="subtitle">Intelligent extraction &amp; analysis for PDF, DOCX, and image files <span class="badge">v1.0.0</span></p>
 
     <div class="features">
       <div class="feature">
-        <div class="icon">📄</div>
+        <div class="icon">File</div>
         <h3>Multi-Format Support</h3>
         <p>PDF, DOCX, PNG, JPG, TIFF, BMP, WEBP</p>
       </div>
       <div class="feature">
-        <div class="icon">🔍</div>
+        <div class="icon">OCR</div>
         <h3>OCR Extraction</h3>
         <p>Tesseract OCR with image preprocessing</p>
       </div>
       <div class="feature">
-        <div class="icon">✨</div>
+        <div class="icon">AI</div>
         <h3>AI Summarisation</h3>
         <p>Powered by Groq llama-3.3-70b</p>
       </div>
       <div class="feature">
-        <div class="icon">🏷️</div>
+        <div class="icon">NLP</div>
         <h3>Entity Extraction</h3>
         <p>People, Orgs, Locations, Dates, Money</p>
       </div>
       <div class="feature">
-        <div class="icon">💬</div>
+        <div class="icon">Sentiment</div>
         <h3>Sentiment Analysis</h3>
         <p>Positive / Negative / Neutral + score</p>
       </div>
       <div class="feature">
-        <div class="icon">⚡</div>
+        <div class="icon">Async</div>
         <h3>Fast Processing</h3>
         <p>Async API with millisecond response</p>
       </div>
     </div>
 
     <div class="card" style="margin-top:1.5rem">
-      <h2>📡 Endpoints</h2>
+      <h2>Endpoints</h2>
       <div class="endpoint">
         <span class="method">POST</span>
         <span class="path">/analyze</span>
@@ -165,7 +165,7 @@ async def root():
     </div>
 
     <div class="card">
-      <h2>🚀 Quick Start</h2>
+      <h2>Quick Start</h2>
       <p style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.75rem">Send a file via multipart form with your API key in the <code>X-API-Key</code> header:</p>
       <code style="display:block;padding:1rem;background:rgba(0,0,0,0.4);border-radius:8px;font-size:0.82rem;line-height:1.6;white-space:pre-wrap">curl -X POST "https://your-app.onrender.com/analyze" \\
   -H "X-API-Key: your-api-key" \\

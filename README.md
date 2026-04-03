@@ -1,236 +1,103 @@
-# 🧠 AI-Powered Document Analysis API
+# Document Analysis API
 
-[![Live Demo](https://img.shields.io/badge/Live-API-green)](https://your-app.onrender.com)
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)](https://fastapi.tiangolo.com)
-[![Model](https://img.shields.io/badge/Model-llama--3.3--70b-orange)](https://console.groq.com)
+A professional document processing engine that extracts and analyzes content from PDF, DOCX, and image formats. This project combines traditional OCR techniques with large language models to provide structured insights from unstructured documents.
 
-An intelligent document processing API that extracts, analyses, and summarises content from **PDF**, **DOCX**, and **image** files using OCR and AI.
+## Project Overview
 
-## ✨ Features
+This API was designed to solve the challenge of extracting consistent, structured data from diverse document formats. It implements a multi-stage pipeline:
+1.  **Direct Extraction**: Leveraging native parsers for digital-first documents.
+2.  **OCR Fallback**: Using Tesseract OCR with advanced image preprocessing for scanned documents and images.
+3.  **Semantic Analysis**: Utilizing Groq's high-speed LPU inference with the `llama-3.3-70b-versatile` model to generate summaries, extract entities, and evaluate sentiment.
 
-| Feature | Technology |
-|---------|-----------|
-| PDF text extraction | PyMuPDF (native) + Tesseract OCR (scanned) |
-| DOCX text extraction | python-docx (paragraphs + tables) |
-| Image OCR | Tesseract + Pillow preprocessing |
-| AI Summarisation | Groq `llama-3.3-70b-versatile` |
-| Entity Extraction | Persons, Org, Location, Date, Money |
-| Sentiment Analysis | Positive / Negative / Neutral (-1.0 to 1.0) |
-| API Framework | FastAPI + Uvicorn (async) |
-| Deployment | Render.com |
+## Technical Decisions
 
----
+- **FastAPI**: Selected for its asynchronous capabilities and native support for OpenAPI documentation, ensuring high performance under concurrent loads.
+- **Groq (llama-3.3-70b)**: Chosen over other LLM providers specifically for inference speed. LPU technology allows for near-instant document processing, which is critical for real-time extraction tasks.
+- **Dual-Path PDF Processing**: The system first attempts native text extraction using PyMuPDF. If the yield is insufficient (indicating a scanned document), it automatically routes through a high-resolution OCR pipeline using `pdf2image` and Tesseract.
 
-## 📡 API Documentation
+## API Documentation
 
-**Base URL**: `https://your-app.onrender.com`  
-**Authentication**: `X-API-Key` header
+### POST /analyze
 
-### `POST /analyze`
+Upload a document for multi-dimensional analysis.
 
-Upload a document for analysis.
+**Authentication**: `X-API-Key` header required.
 
-**Request** (`multipart/form-data`):
+**Supported Formats**:
+- PDF (.pdf)
+- Microsoft Word (.docx)
+- Images (.png, .jpg, .jpeg, .tiff, .bmp, .webp)
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `file` | File | ✅ | PDF, DOCX, PNG, JPG, JPEG, TIFF, BMP, WEBP |
-
-**Headers**:
-```
-X-API-Key: <your-api-key>
+**Example Request**:
+```bash
+curl -X POST "https://your-service-url.com/analyze" \
+  -H "X-API-Key: your_service_api_key" \
+  -F "file=@report.pdf"
 ```
 
-**Response** (`200 OK`):
+**Example Response**:
 ```json
 {
   "status": "success",
   "filename": "report.pdf",
   "file_type": "pdf",
-  "extracted_text_preview": "First 500 characters of extracted text...",
+  "extracted_text_preview": "Summary of Q3 financial performance...",
   "analysis": {
-    "summary": "Concise 2-4 sentence summary of the document.",
+    "summary": "The report indicates a strong fiscal quarter with significant growth in the cloud sector...",
     "entities": [
-      { "text": "John Smith", "type": "PERSON" },
-      { "text": "Acme Corporation", "type": "ORGANIZATION" },
-      { "text": "New York", "type": "LOCATION" },
-      { "text": "January 15, 2024", "type": "DATE" },
-      { "text": "$50,000", "type": "MONEY" }
+      { "text": "Acme Corp", "type": "ORGANIZATION" },
+      { "text": "$2.5M", "type": "MONEY" }
     ],
     "sentiment": {
       "label": "positive",
-      "score": 0.72,
-      "explanation": "The document presents optimistic financial results and future projections."
+      "score": 0.85,
+      "explanation": "Strong financial metrics and positive outlook statements."
     }
   },
   "metadata": {
-    "processing_time_ms": 1840,
+    "processing_time_ms": 1240,
     "ocr_used": false,
-    "page_count": 3,
+    "page_count": 5,
     "word_count": 1250
   }
 }
 ```
 
-**Error Responses**:
-```json
-{ "status": "error", "error_code": "UNSUPPORTED_FORMAT", "message": "..." }
-{ "status": "error", "error_code": "EMPTY_FILE", "message": "..." }
-{ "status": "error", "error_code": "NO_TEXT_EXTRACTED", "message": "..." }
-{ "status": "error", "error_code": "UNAUTHORIZED", "message": "..." }
-```
-
----
-
-### `GET /health`
-
-Health check endpoint.
-
-```json
-{ "status": "ok", "version": "1.0.0", "model": "llama-3.3-70b-versatile" }
-```
-
----
-
-## 🚀 Quick Start (Local)
+## Local Development
 
 ### Prerequisites
 - Python 3.11+
-- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) installed
-- [Poppler](https://poppler.freedesktop.org/) installed (for PDF→image conversion)
+- Tesseract OCR (Binary)
+- Poppler (Binary for pdf2image)
 
-### Installation
+### Setup
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/shravipansare/doc-analysis-api.git
+    cd doc-analysis-api
+    ```
+2.  **Environment Configuration**:
+    Create a `.env` file based on `.env.example`:
+    ```env
+    GROQ_API_KEY=your_key
+    SERVICE_API_KEY=your_random_string
+    ```
+3.  **Install dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  **Launch the server**:
+    ```bash
+    uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ```
 
-```bash
-# Clone the repository
-git clone https://github.com/your-username/doc-analysis-api.git
-cd doc-analysis-api
+## Roadmap
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+- [ ] Support for multi-column layout analysis.
+- [ ] Table-to-Markdown extraction for complex financial reports.
+- [ ] Support for bulk document processing via batch endpoints.
+- [ ] Integration with vector databases for RAG-based document querying.
 
-# Install dependencies
-pip install -r requirements.txt
+## License
 
-# Configure environment
-cp .env.example .env
-# Edit .env and add your GROQ_API_KEY and SERVICE_API_KEY
-```
-
-### Running Locally
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-Visit: http://localhost:8000
-
-### Test with curl
-
-**PDF:**
-```bash
-curl -X POST "http://localhost:8000/analyze" \
-  -H "X-API-Key: your-service-api-key" \
-  -F "file=@sample.pdf"
-```
-
-**DOCX:**
-```bash
-curl -X POST "http://localhost:8000/analyze" \
-  -H "X-API-Key: your-service-api-key" \
-  -F "file=@document.docx"
-```
-
-**Image:**
-```bash
-curl -X POST "http://localhost:8000/analyze" \
-  -H "X-API-Key: your-service-api-key" \
-  -F "file=@image.png"
-```
-
----
-
-## 🐳 Docker Deployment
-
-```bash
-# Build image
-docker build -t doc-analysis-api .
-
-# Run container
-docker run -p 8000:8000 \
-  -e GROQ_API_KEY=your_key \
-  -e SERVICE_API_KEY=your_service_key \
-  doc-analysis-api
-```
-
----
-
-## ☁️ Deploy to Render
-
-1. Push repo to GitHub
-2. Go to [render.com](https://render.com) → New Web Service
-3. Connect your GitHub repo
-4. Render will auto-detect `render.yaml`
-5. Set `GROQ_API_KEY` and `SERVICE_API_KEY` in Render dashboard → Environment
-6. Deploy!
-
----
-
-## 🏗️ Architecture
-
-```
-POST /analyze
-    │
-    ├── File Type Detection (.pdf, .docx, .png, ...)
-    │
-    ├── Text Extraction
-    │     ├── PDF → PyMuPDF → OCR fallback (pdf2image + Tesseract)
-    │     ├── DOCX → python-docx
-    │     └── Image → Pillow preprocessing → Tesseract
-    │
-    └── AI Analysis (Groq llama-3.3-70b-versatile)
-          ├── Summary
-          ├── Named Entity Extraction
-          └── Sentiment Analysis
-```
-
----
-
-## 📁 Project Structure
-
-```
-doc-analysis-api/
-├── app/
-│   ├── main.py              # FastAPI app, CORS, health, landing page
-│   ├── routers/
-│   │   └── analyze.py       # POST /analyze endpoint
-│   ├── services/
-│   │   ├── extractor.py     # PDF/DOCX/Image text extraction
-│   │   └── ai_analyzer.py   # Groq API (summary + entities + sentiment)
-│   ├── models/
-│   │   └── schemas.py       # Pydantic models
-│   └── utils/
-│       └── file_utils.py    # File type detection
-├── requirements.txt
-├── Dockerfile
-├── render.yaml
-├── .env.example
-└── README.md
-```
-
----
-
-## 🔐 Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GROQ_API_KEY` | ✅ | Groq API key from console.groq.com |
-| `SERVICE_API_KEY` | ⚠️ | API key for authenticating requests. Leave empty to disable auth (dev only). |
-
----
-
-## 📄 License
-
-MIT License — feel free to use and modify.
+This project is licensed under the MIT License - see the LICENSE file for details.
