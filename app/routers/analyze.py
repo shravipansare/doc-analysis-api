@@ -4,12 +4,17 @@ import logging
 import tempfile
 from pathlib import Path
 
+import asyncio
+import uuid
+from typing import List
+
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException, Depends
 from fastapi.security.api_key import APIKeyHeader
 
-from app.models.schemas import AnalysisResponse, ErrorResponse, Metadata
+from app.models.schemas import AnalysisResponse, ErrorResponse, Metadata, BatchAnalysisResponse
 from app.services.extractor import extract_text
 from app.services.ai_analyzer import analyze_text
+from app.services.rag_service import index_document
 from app.utils.file_utils import get_file_type, get_supported_extensions
 
 logger = logging.getLogger(__name__)
@@ -129,6 +134,15 @@ async def analyze_document(
             )
 
         # ------------------------------------------------------------------ #
+        # 3.5 Auto-Index for RAG
+        # ------------------------------------------------------------------ #
+        try:
+            # We index it asynchronously so it doesn't block (or standard fire-and-forget sync)
+            asyncio.create_task(asyncio.to_thread(index_document, extract_result.text, filename))
+        except Exception as e:
+            logger.warning(f"Failed to index document for RAG: {e}")
+
+        # ------------------------------------------------------------------ #
         # 4. AI Analysis via Groq
         # ------------------------------------------------------------------ #
         analysis = analyze_text(extract_result.text)
@@ -174,3 +188,33 @@ async def analyze_document(
                 os.unlink(tmp_path)
             except Exception:
                 pass
+
+
+@router.post(
+    "/analyze/batch",
+    response_model=BatchAnalysisResponse,
+    summary="Batch analyze multiple documents",
+    description="Upload multiple documents at once and receive analysis for all.",
+    tags=["Document Analysis"]
+)
+async def analyze_batch(
+    files: List[UploadFile] = File(..., description="Documents to analyze"),
+    _: bool = Depends(verify_api_key),
+):
+    # For large batches, it is recommended to use background tasks. Here we process sequentially for simplicity.
+    results = []
+    for file in files:
+        try:
+            res = await analyze_document(file, _)
+            results.append(res)
+        except HTTPException as e:
+            # If a single file fails, we might want to capture the error in the results.
+            # But since analyze_document raises HTTPExceptions, we catch them and mock an error response inside the success list if needed.
+            # For simplicity let's just let it raise and fail the batch, or optionally swallow and return an ErrorResponse schema.
+            raise e
+            
+    return BatchAnalysisResponse(
+        status="success",
+        batch_id=uuid.uuid4().hex[:8],
+        results=results
+    )

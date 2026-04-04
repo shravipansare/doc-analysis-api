@@ -93,10 +93,10 @@ curl -X POST "https://your-service-url.com/analyze" \
 
 ## Roadmap
 
-- [ ] Support for multi-column layout analysis.
-- [ ] Table-to-Markdown extraction for complex financial reports.
-- [ ] Support for bulk document processing via batch endpoints.
-- [ ] Integration with vector databases for RAG-based document querying.
+- [x] Support for multi-column layout analysis.
+- [x] Table-to-Markdown extraction for complex financial reports.
+- [x] Support for bulk document processing via batch endpoints.
+- [x] Integration with vector databases for RAG-based document querying.
 
 ## License
 

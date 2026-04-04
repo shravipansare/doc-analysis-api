@@ -29,7 +29,16 @@ def extract_pdf(file_path: str) -> ExtractResult:
         text_parts = []
 
         for page in doc:
-            text_parts.append(page.get_text("text"))
+            # Multi-column sort
+            text_parts.append(page.get_text("text", sort=True))
+            
+            # Table extraction to Markdown
+            tabs = page.find_tables()
+            if tabs and tabs.tables:
+                for table in tabs.tables:
+                    md_table = table.to_markdown()
+                    if md_table:
+                        text_parts.append(f"\n[TABLE EXTRACTION]\n{md_table}\n")
 
         doc.close()
         full_text = "\n\n".join(text_parts).strip()
@@ -85,12 +94,18 @@ def extract_docx(file_path: str) -> ExtractResult:
 
         # Extract text from tables
         for table in doc.tables:
-            for row in table.rows:
-                row_text = " | ".join(
-                    cell.text.strip() for cell in row.cells if cell.text.strip()
-                )
-                if row_text:
-                    text_parts.append(row_text)
+            if not table.rows:
+                continue
+            text_parts.append("\n[TABLE EXTRACTION]")
+            for i, row in enumerate(table.rows):
+                # Clean cell text (remove newlines to prevent markdown breakage)
+                row_cells = [cell.text.strip().replace("\n", " ") for cell in row.cells]
+                row_text = "| " + " | ".join(row_cells) + " |"
+                text_parts.append(row_text)
+                if i == 0:
+                    divider = "| " + " | ".join(["---"] * len(row_cells)) + " |"
+                    text_parts.append(divider)
+            text_parts.append("\n")
 
         full_text = "\n\n".join(text_parts).strip()
         return ExtractResult(text=full_text, page_count=None, ocr_used=False)

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from dotenv import load_dotenv
 
-from app.routers import analyze
+from app.routers import analyze, rag
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -60,6 +60,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(analyze.router, tags=["Document Analysis"])
+app.include_router(rag.router, tags=["RAG Document Querying"])
 
 
 # --------------------------------------------------------------------------- #
@@ -143,6 +144,16 @@ async def root():
         <h3>Fast Processing</h3>
         <p>Async API with millisecond response</p>
       </div>
+      <div class="feature">
+        <div class="icon">Search</div>
+        <h3>RAG Query</h3>
+        <p>Chat with integrated Vector DB</p>
+      </div>
+      <div class="feature">
+        <div class="icon">Layers</div>
+        <h3>Batch Processing</h3>
+        <p>Analyze multiple files simultaneously</p>
+      </div>
     </div>
 
     <div class="card" style="margin-top:1.5rem">
@@ -151,6 +162,16 @@ async def root():
         <span class="method">POST</span>
         <span class="path">/analyze</span>
         <span class="desc">Upload &amp; analyse a document</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">POST</span>
+        <span class="path">/analyze/batch</span>
+        <span class="desc">Batch processing</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">POST</span>
+        <span class="path">/query</span>
+        <span class="desc">RAG document query</span>
       </div>
       <div class="endpoint">
         <span class="method get">GET</span>

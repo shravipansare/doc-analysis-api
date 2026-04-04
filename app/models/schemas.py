@@ -39,3 +39,20 @@ class ErrorResponse(BaseModel):
     status: str = "error"
     error_code: str
     message: str
+
+
+class BatchAnalysisResponse(BaseModel):
+    status: str = "success"
+    batch_id: str
+    results: List[AnalysisResponse]
+
+
+class QueryRequest(BaseModel):
+    query: str
+
+
+class QueryResponse(BaseModel):
+    status: str = "success"
+    query: str
+    answer: str
+

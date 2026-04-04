@@ -136,3 +136,41 @@ def _parse_analysis(raw_json: str) -> Analysis:
                 explanation="Sentiment analysis failed due to a parsing error.",
             ),
         )
+
+RAG_PROMPT = """You are a helpful and intelligent question answering assistant. 
+Use the following retrieved context to answer the user's question. 
+If the answer cannot be found in the context, simply say "I'm sorry, I cannot find the answer to this question in the provided documents." 
+Do NOT make up information.
+
+Context:
+---
+{context}
+---
+
+Question: {question}
+
+Answer:"""
+
+def generate_rag_response(context_chunks: list[str], query: str) -> str:
+    """Generate an answer using Groq and the provided chunks."""
+    if not context_chunks:
+        return "I'm sorry, I don't have enough context from the documents to answer that."
+
+    client = get_client()
+    merged_context = "\n\n".join(context_chunks)
+    prompt = RAG_PROMPT.format(context=merged_context, question=query)
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "You are a precise QA assistant."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            max_tokens=1024,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"RAG Groq generation failed: {e}")
+        return "Sorry, I encountered an error while trying to answer your question."
