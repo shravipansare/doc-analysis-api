@@ -98,6 +98,14 @@ curl -X POST "https://your-service-url.com/analyze" \
 - [x] Support for bulk document processing via batch endpoints.
 - [x] Integration with vector databases for RAG-based document querying.
 
+## AI Tools Used
+
+In accordance with the hackathon policy, the following AI tools were utilized in the creation and functionality of this application:
+
+- **Llama 3.3 70B (via Groq API)**: Used as the core extraction engine to perform near-instant summarization, sentiment evaluation, and entity extraction on parsed documents.
+- **Sentence-Transformers (all-MiniLM-L6-v2)**: Generates local chunk embeddings to power the ChromaDB Vector database for document RAG querying.
+- **Gemini / AI Coding Assistant**: Used responsibly during the intensive sprint as a pair-programmer to assist with FastAPI scaffolding, markdown structure parsing, and troubleshooting Render deployment dependencies.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
