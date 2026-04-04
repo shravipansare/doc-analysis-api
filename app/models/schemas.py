@@ -28,10 +28,12 @@ class Metadata(BaseModel):
 
 class AnalysisResponse(BaseModel):
     status: str = "success"
-    filename: str
+    fileName: str
     file_type: str
     extracted_text_preview: str
-    analysis: Analysis
+    summary: str
+    entities: List[Entity]
+    sentiment: Sentiment
     metadata: Metadata
 
 
